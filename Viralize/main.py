@@ -303,12 +303,42 @@ def generate_viral_for_chunk(chunk_text, chunk_start_seconds, max_segments, open
         {"role": "user", "content": user}
     ]
 
-    resp = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k",
-        messages=messages,
-        temperature=0.2,
-        max_tokens=1500
-    )
+    max_retries = 5
+    base_delay = 20
+    
+    for attempt in range(max_retries):
+        try:
+            resp = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo-16k",
+                messages=messages,
+                temperature=0.2,
+                max_tokens=1500
+            )
+            break # success
+        except openai.error.RateLimitError:
+            if attempt < max_retries - 1:
+                sleep_time = base_delay * (attempt + 1)
+                print(f"Rate limit hit. Sleeping for {sleep_time} seconds before retry {attempt+1}/{max_retries}...")
+                time.sleep(sleep_time)
+            else:
+                raise # re-raise last error
+        except openai.error.ServiceUnavailableError:
+            if attempt < max_retries - 1:
+                sleep_time = base_delay * (attempt + 1)
+                print(f"Service unavailable. Sleeping for {sleep_time} seconds...")
+                time.sleep(sleep_time)
+            else:
+                raise
+        except Exception as e:
+            # Check for rate limit message if it wasn't caught by specific error class (sometime happens in diff versions)
+            if "rate limit" in str(e).lower():
+                if attempt < max_retries - 1:
+                    sleep_time = base_delay * (attempt + 1)
+                    print(f"Rate limit hit (generic catch). Sleeping for {sleep_time} seconds...")
+                    time.sleep(sleep_time)
+                    continue
+            raise e
+
     content = resp.choices[0].message.content.strip()
     if content.endswith(","):
         content = content[:-1] + "\n    }\n]}"
