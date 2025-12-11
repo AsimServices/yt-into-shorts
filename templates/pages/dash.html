@@ -1,0 +1,667 @@
+<!-- templates/pages/dash.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ViralizeIt — Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 20px auto;
+        }
+
+        .card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .tab {
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+
+        .tab.active {
+            background: #fff;
+            color: #2563eb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab:hover:not(.active) {
+            color: #334155;
+            background: #e2e8f0;
+        }
+
+        /* Form */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        input[type="url"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background: #f8fafc;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #fff;
+        }
+
+        input[type="submit"] {
+            padding: 14px 28px;
+            border-radius: 10px;
+            border: 0;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: transform 0.1s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        input[type="submit"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        input[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .progress-wrap {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-inner {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .logs {
+            margin-top: 20px;
+            background: #0f172a;
+            color: #cbd5e1;
+            padding: 16px;
+            border-radius: 12px;
+            font-family: 'Menlo', monospace;
+            font-size: 13px;
+            max-height: 250px;
+            overflow: auto;
+            border: 1px solid #1e293b;
+        }
+
+        .shorts-list {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .short-item {
+            background: #f1f5f9;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .short-item::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .downloads {
+            margin-top: 16px;
+        }
+
+        .zip-link {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #059669;
+            color: #fff;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+            transition: all 0.2s;
+        }
+
+        .zip-link:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .note {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .badge-optional {
+            font-weight: normal;
+            font-size: 11px;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #64748b;
+            margin-left: 6px;
+            display: none;
+        }
+
+        .file-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 8px;
+        }
+
+        .file-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .file-link:hover {
+            background: #f1f5f9;
+            color: #2563eb;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .alert.success {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .btn-capture {
+            padding: 10px;
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #475569;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-capture:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .btn-capture:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h1>ViralizeIt — Dashboard</h1>
+
+        {% if error %}
+        <div class="alert error">{{ error }}</div>
+        {% endif %}
+        {% if msg %}
+        <div class="alert success">{{ msg }}</div>
+        {% endif %}
+
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="setMode('auto')" id="tab-auto">AI Auto-Detect</div>
+                <div class="tab" onclick="setMode('custom')" id="tab-custom">Custom Clip</div>
+            </div>
+
+            <form action="/" method="post" id="main-form" style="display:grid; gap:16px;">
+                <input type="hidden" name="mode" id="mode-input" value="auto">
+                <div class="form-group">
+                    <label>Video URL</label>
+                    <input type="url" name="vidLink" placeholder="https://www.youtube.com/watch?v=..." required />
+                </div>
+
+                <div class="form-group">
+                    <label>OpenAI API Key <span class="badge-optional" id="apikey-badge">(Required)</span></label>
+                    <input type="password" name="apiKey" id="apiKey" placeholder="sk-..." required />
+                </div>
+
+                <div id="auto-options" class="form-group" style="margin-bottom: 24px;">
+                    <label>Number of Clips to Generate</label>
+                    <input type="number" name="numClips" id="numClips" value="5" min="1" max="50" placeholder="5" />
+                    <div style="font-size:12px; color:#64748b; margin-top:4px;">AI will select the top matching moments.
+                    </div>
+                </div>
+
+                <div id="custom-inputs" style="display:none; gap:12px;">
+                    <!-- Player Container -->
+                    <div id="player-container"
+                        style="grid-column: 1 / -1; display:none; margin-bottom:12px; border-radius:12px; overflow:hidden; aspect-ratio: 16/9; background:#000;">
+                        <div id="yt-player"></div>
+                    </div>
+
+                    <div id="clip-list" style="display:flex; flex-direction:column; gap:12px;">
+                        <!-- Dynamic rows will be added here -->
+                    </div>
+
+                    <button type="button" onclick="addClipRow()"
+                        style="justify-self:start; padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer; background-color:#3b82f6; color:white; border:none; border-radius:6px; transition: background-color 0.2s;"
+                        onmouseover="this.style.backgroundColor='#2563eb'"
+                        onmouseout="this.style.backgroundColor='#3b82f6'">
+                        + Add Another Clip
+                    </button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <input type="submit" value="Generate Short" id="submit-btn" />
+                    <div class="note" style="max-width:300px; text-align:right;">
+                        <span id="note-text">AI analysis will find the best viral moments.</span>
+                    </div>
+                </div>
+            </form>
+
+            <div style="margin-top:24px; border-top:1px solid #e2e8f0; padding-top:18px;">
+                <h3 style="margin-top:0; font-size:16px;">Recent Downloads</h3>
+                {% if files %}
+                <ul class="file-list">
+                    {% for file in files %}
+                    <li>
+                        <a href="{{ file }}" target="_blank" class="file-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            {{ file | replace("/static/downloads/", "") }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="note">No downloads yet.</div>
+                {% endif %}
+            </div>
+
+            <!-- live status (only visible when a request_code exists) -->
+            <div id="live-area" style="margin-top:18px; display:none;">
+                <h3>Processing</h3>
+                <div id="video-title" style="font-weight:800; margin-bottom:6px;"></div>
+
+                <div class="progress-wrap">
+                    <div class="progress-bar">
+                        <div class="progress-inner" id="progress-inner"></div>
+                    </div>
+                    <div class="meta">
+                        <div id="progress-status">Queued</div>
+                        <div id="progress-percent">0%</div>
+                    </div>
+                    <button class="btn-cancel" onclick="cancelJob()"
+                        style="margin-top:12px; padding:6px 12px; font-size:12px; border-radius:6px; background:#ef4444; color:white; border:none; cursor:pointer;">Cancel
+                        Job</button>
+                </div>
+
+                <div class="logs" id="logs" aria-live="polite"></div>
+
+                <div class="shorts-list" id="shorts"></div>
+
+                <div class="downloads" id="downloads-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Globals ---
+        var player;
+        var rowCount = 0;
+        // Inject request code safely
+        var requestCode = "{{ request_code }}";
+        if (requestCode === "None" || !requestCode) requestCode = null;
+
+        // --- Functions ---
+        function setMode(mode) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + mode).classList.add('active');
+            document.getElementById('mode-input').value = mode;
+
+            const customInputs = document.getElementById('custom-inputs');
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiKeyBadge = document.getElementById('apikey-badge');
+            const noteText = document.getElementById('note-text');
+            const playerContainer = document.getElementById('player-container');
+
+            if (mode === 'custom') {
+                customInputs.style.display = 'grid';
+                apiKeyInput.required = false;
+                apiKeyBadge.textContent = "(Optional)";
+                apiKeyBadge.style.display = 'inline';
+                noteText.textContent = "Extracts exact clip from start to end time.";
+
+                // Initialize first row if empty
+                if (document.getElementById('clip-list').children.length === 0) {
+                    addClipRow();
+                }
+
+                // Auto-load video
+                const urlInput = document.querySelector('input[name="vidLink"]');
+                if (urlInput && urlInput.value) {
+                    const vidId = extractVideoID(urlInput.value);
+                    if (vidId) {
+                        if (playerContainer) playerContainer.style.display = 'block';
+                        loadVideo(vidId);
+                    }
+                }
+            } else {
+                customInputs.style.display = 'none';
+                apiKeyInput.required = true;
+                apiKeyBadge.textContent = "(Required)";
+                apiKeyBadge.style.display = 'none';
+                if (autoOptions) autoOptions.style.display = 'block';
+                noteText.textContent = "AI analysis will find the best viral moments.";
+                if (playerContainer) playerContainer.style.display = 'none';
+                if (player && typeof player.stopVideo === 'function') {
+                    player.stopVideo();
+                }
+            }
+        }
+
+        function addClipRow() {
+            const list = document.getElementById('clip-list');
+            const id = rowCount++;
+
+            const div = document.createElement('div');
+            div.className = "clip-row";
+            div.style.cssText = "display:grid; grid-template-columns: 1fr 1fr auto; gap:12px; align-items:end; padding:8px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;";
+            div.innerHTML = `
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:12px; margin-bottom:4px; display:block;">Start Time</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="start-time-${id}" name="startTime" placeholder="00:00:00" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" style="padding:6px; font-size:13px;" required />
+                        <button type="button" class="btn-capture" onclick="captureTime('start', ${id})" title="Capture Start">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:12px; margin-bottom:4px; display:block;">End Time</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="end-time-${id}" name="endTime" placeholder="00:01:00" pattern="[0-9]{2}:[0-9]{2}:[0-9]{2}" style="padding:6px; font-size:13px;" required />
+                        <button type="button" class="btn-capture" onclick="captureTime('end', ${id})" title="Capture End">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" onclick="removeClipRow(this)" style="padding:4px 8px; font-size:12px; background:#fecaca; color:#dc2626; border:none; border-radius:4px; cursor:pointer; height:32px; align-self:end;" title="Remove Clip">
+                    ✕
+                </button>
+            `;
+            list.appendChild(div);
+        }
+
+        function removeClipRow(btn) {
+            const list = document.getElementById('clip-list');
+            if (list.children.length > 1) {
+                btn.parentElement.remove();
+            } else {
+                alert("You must have at least one clip.");
+            }
+        }
+
+        function captureTime(type, rowId) {
+            if (!player || typeof player.getCurrentTime !== 'function') {
+                alert("Player not ready.");
+                return;
+            }
+            var sec = player.getCurrentTime();
+            var formatted = new Date(sec * 1000).toISOString().substr(11, 8);
+
+            if (rowId === undefined) rowId = 0;
+
+            var input = document.getElementById(type + '-time-' + rowId);
+            if (input) {
+                input.value = formatted;
+            }
+        }
+
+        function extractVideoID(url) {
+            if (!url) return false;
+            var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            var match = url.match(regExp);
+            return (match && match[7].length == 11) ? match[7] : false;
+        }
+
+        function loadVideo(id) {
+            const container = document.getElementById('player-container');
+            if (container) container.style.display = 'block';
+            if (player) {
+                player.loadVideoById(id);
+            } else if (window.YT && window.YT.Player) {
+                player = new YT.Player('yt-player', {
+                    height: '100%',
+                    width: '100%',
+                    videoId: id,
+                    playerVars: { 'autoplay': 1, 'controls': 1 }
+                });
+            } else {
+                // API not ready, it will init in onYouTubeIframeAPIReady
+                window.pendingVideoId = id;
+            }
+        }
+
+        function cancelJob() {
+            if (!requestCode) return;
+            if (!confirm("Are you sure you want to cancel?")) return;
+
+            fetch(`/cancel/${requestCode}`, { method: 'POST' })
+                .then(r => console.log("Cancel requested"))
+                .catch(e => alert(e));
+        }
+
+        // --- YouTube API ---
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        window.onYouTubeIframeAPIReady = function () {
+            if (window.pendingVideoId) {
+                loadVideo(window.pendingVideoId);
+                window.pendingVideoId = null;
+            }
+        };
+
+        // --- Polling Logic ---
+        if (requestCode) {
+            const liveArea = document.getElementById('live-area');
+            const progressInner = document.getElementById('progress-inner');
+            const progressStatus = document.getElementById('progress-status');
+            const progressPercent = document.getElementById('progress-percent');
+            const logs = document.getElementById('logs');
+            const shortsList = document.getElementById('shorts');
+            const downloadsArea = document.getElementById('downloads-area');
+            const videoTitleEl = document.getElementById('video-title');
+
+            liveArea.style.display = "block";
+
+            // To track what we've already displayed
+            var displayedShorts = new Set();
+
+            const timer = setInterval(() => {
+                fetch('/status/' + requestCode)
+                    .then(r => r.json())
+                    .then(data => {
+                        // Update Title
+                        if (data.video_title) videoTitleEl.textContent = data.video_title;
+
+                        // Update Status/Progress
+                        progressStatus.textContent = data.message || data.status;
+                        let p = data.progress || 0;
+                        if (data.status === 'downloading') p = data.download_percent || 0;
+                        progressInner.style.width = p + "%";
+                        progressPercent.textContent = p + "%";
+
+                        // Cancel Button Visibility
+                        const btnCancel = document.querySelector('.btn-cancel');
+                        if (btnCancel) {
+                            if (["completed", "failed", "cancelled"].includes(data.status)) {
+                                btnCancel.style.display = "none";
+                            } else {
+                                btnCancel.style.display = "inline-block";
+                            }
+                        }
+
+                        // Display Shorts (Generated Files)
+                        if (data.generated_files && data.generated_files.length > 0) {
+                            data.generated_files.forEach(filename => {
+                                if (!displayedShorts.has(filename)) {
+                                    displayedShorts.add(filename);
+
+                                    const li = document.createElement('div');
+                                    li.style.marginBottom = "12px";
+                                    li.innerHTML = `
+                                    <div style="font-weight:bold; margin-bottom:4px;">${filename}</div>
+                                    <video src="/static/shorts/${filename}" controls style="width:100%; max-width:300px; border-radius:8px;"></video>
+                                `;
+                                    shortsList.appendChild(li);
+                                }
+                            });
+                        }
+
+                        // Final States
+                        if (data.status === 'completed') {
+                            clearInterval(timer);
+                            progressInner.style.backgroundColor = '#10b981';
+                            if (data.zip) {
+                                downloadsArea.innerHTML = `<a href="${data.zip}" class="btn-download" target="_blank" style="display:inline-block; padding:10px 20px; background:#10b981; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">Download All (ZIP)</a>`;
+                            }
+                        } else if (data.status === 'failed') {
+                            clearInterval(timer);
+                            progressInner.style.backgroundColor = '#ef4444';
+                            logs.textContent = "Error: " + data.error;
+                        } else if (data.status === 'cancelled') {
+                            clearInterval(timer);
+                            progressInner.style.backgroundColor = '#9ca3af';
+                            progressStatus.textContent = "Cancelled";
+                        }
+
+                    })
+                    .catch(e => console.error(e));
+            }, 2000);
+        }
+
+        // Listener for URL input to auto-load video in custom mode
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlInput = document.querySelector('input[name="vidLink"]');
+            if (urlInput) {
+                urlInput.addEventListener('blur', function () {
+                    if (document.getElementById('mode-input').value === 'custom') {
+                        const vidId = extractVideoID(this.value);
+                        if (vidId) loadVideo(vidId);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
