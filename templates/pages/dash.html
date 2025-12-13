@@ -75,6 +75,7 @@
 
         input[type="url"],
         input[type="password"],
+        input[type="number"],
         input[type="text"] {
             width: 100%;
             padding: 14px;
@@ -315,7 +316,7 @@
                     <input type="url" name="vidLink" placeholder="https://www.youtube.com/watch?v=..." required />
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="apiKey-container">
                     <label>OpenAI API Key <span class="badge-optional" id="apikey-badge">(Required)</span></label>
                     <input type="password" name="apiKey" id="apiKey" placeholder="sk-..." required />
                 </div>
@@ -418,14 +419,19 @@
             document.getElementById('tab-' + mode).classList.add('active');
             document.getElementById('mode-input').value = mode;
 
+            const autoOptions = document.getElementById('auto-options');
             const customInputs = document.getElementById('custom-inputs');
             const apiKeyInput = document.getElementById('apiKey');
+            const apiKeyContainer = document.getElementById('apiKey-container');
             const apiKeyBadge = document.getElementById('apikey-badge');
             const noteText = document.getElementById('note-text');
             const playerContainer = document.getElementById('player-container');
 
             if (mode === 'custom') {
                 customInputs.style.display = 'grid';
+                if (autoOptions) autoOptions.style.display = 'none';
+                if (apiKeyContainer) apiKeyContainer.style.display = 'none';
+
                 apiKeyInput.required = false;
                 apiKeyBadge.textContent = "(Optional)";
                 apiKeyBadge.style.display = 'inline';
@@ -445,12 +451,21 @@
                         loadVideo(vidId);
                     }
                 }
+
+                // Re-enable required on custom inputs
+                document.querySelectorAll('input[name="startTime"], input[name="endTime"]').forEach(el => el.required = true);
             } else {
                 customInputs.style.display = 'none';
+                if (autoOptions) autoOptions.style.display = 'block';
+                if (apiKeyContainer) apiKeyContainer.style.display = 'flex';
+
                 apiKeyInput.required = true;
                 apiKeyBadge.textContent = "(Required)";
                 apiKeyBadge.style.display = 'none';
-                if (autoOptions) autoOptions.style.display = 'block';
+
+                // Disable required on hidden custom inputs so form can submit
+                document.querySelectorAll('input[name="startTime"], input[name="endTime"]').forEach(el => el.required = false);
+
                 noteText.textContent = "AI analysis will find the best viral moments.";
                 if (playerContainer) playerContainer.style.display = 'none';
                 if (player && typeof player.stopVideo === 'function') {
@@ -658,6 +673,18 @@
                         const vidId = extractVideoID(this.value);
                         if (vidId) loadVideo(vidId);
                     }
+                });
+            }
+
+            // Persistence for API Key
+            const apiKeyInput = document.getElementById('apiKey');
+            if (apiKeyInput) {
+                const storedKey = localStorage.getItem('openai_api_key');
+                if (storedKey) {
+                    apiKeyInput.value = storedKey;
+                }
+                apiKeyInput.addEventListener('input', function () {
+                    localStorage.setItem('openai_api_key', this.value);
                 });
             }
         });
