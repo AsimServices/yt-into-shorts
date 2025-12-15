@@ -286,8 +286,13 @@ def generate_viral_for_chunk(chunk_text, chunk_start_seconds, max_segments, open
     json_template = '{ "segments": [ { "start_time": "HH:MM:SS", "end_time": "HH:MM:SS" } ] }'
 
     system = (
-        "You are a Viral Segment Identifier. You will receive a transcript chunk and return at most the requested number of candidate segments that appear most likely to go viral. "
-        f"Each segment MUST be between {min_segment_seconds} and {max_segment_seconds} seconds. Return only valid JSON with a top-level 'segments' array, each item having 'start_time' and 'end_time' in HH:MM:SS format. "
+        "You are a Viral Content Expert. Your goal is to identify the most engaging, shareable, and viral-worthy segments from a video transcript. "
+        "Look for segments that have:"
+        "1. A strong hook or opening line."
+        "2. High emotional value (humor, shock, inspiration, controversy)."
+        "3. A clear beginning, middle, and end context."
+        f"Each segment MUST be between {min_segment_seconds} and {max_segment_seconds} seconds. "
+        "Return only valid JSON with a top-level 'segments' array, each item having 'start_time' and 'end_time' in HH:MM:SS format. "
         "Start and end times must be relative to the beginning of this chunk (chunk start = 00:00:00). Do NOT include commentary."
     )
 
@@ -309,10 +314,10 @@ def generate_viral_for_chunk(chunk_text, chunk_start_seconds, max_segments, open
     for attempt in range(max_retries):
         try:
             resp = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-16k",
+                model="gpt-4o-mini",
                 messages=messages,
-                temperature=0.2,
-                max_tokens=1500
+                temperature=0.3,
+                max_tokens=3000
             )
             break # success
         except openai.error.RateLimitError:
@@ -478,7 +483,7 @@ def trim_video_with_moviepy(input_file, output_file, start_sec, end_sec):
         sub = video.subclip(start_sec, end_sec)
         resized = resize_video_to_720x1280(sub)
         # write file quietly
-        resized.write_videofile(output_file, codec='libx264', audio_codec='aac', verbose=False, logger=None)
+        resized.write_videofile(output_file, codec='libx264', audio_codec='aac', verbose=False, logger=None, ffmpeg_params=['-pix_fmt', 'yuv420p'])
 
 def create_shorts(video_path, viral_segments, request_code):
     files = []
@@ -625,6 +630,21 @@ def ViralEm(video_id=None, video_path=None, cviral_response=None, key=None, requ
 
             update_status(request_code, message="Extracting subtitles...", status="extracting_subtitles", progress=25)
             transcript = extract_subtitles(video_path)
+            
+            # --- Save Subtitle File for Frontend ---
+            try:
+                # Based on extract_subtitles logic, the SRT is in tmp/basename.srt
+                base_name = os.path.basename(video_path).split('.')[0]
+                tmp_srt = os.path.join("tmp", f"{base_name}.srt")
+                if os.path.exists(tmp_srt):
+                    sub_dest = os.path.join("static", "subtitles", f"{request_code}.srt")
+                    os.makedirs(os.path.dirname(sub_dest), exist_ok=True)
+                    shutil.copy(tmp_srt, sub_dest)
+                    # Update status with subtitle path immediately so user can see it
+                    update_status(request_code, subtitle_file=f"/static/subtitles/{request_code}.srt")
+            except Exception as e:
+                print(f"Could not save subtitle file: {e}")
+            # ---------------------------------------
             
             check_cancellation(request_code)
 

@@ -391,9 +391,21 @@
                         <div id="progress-status">Queued</div>
                         <div id="progress-percent">0%</div>
                     </div>
-                    <button class="btn-cancel" onclick="cancelJob()"
-                        style="margin-top:12px; padding:6px 12px; font-size:12px; border-radius:6px; background:#ef4444; color:white; border:none; cursor:pointer;">Cancel
-                        Job</button>
+                    <div style="display:flex; gap:10px; margin-top:12px;">
+                        <button class="btn-cancel" onclick="cancelJob()"
+                            style="padding:6px 12px; font-size:12px; border-radius:6px; background:#ef4444; color:white; border:none; cursor:pointer;">Cancel
+                            Job</button>
+
+                        <div id="subtitle-actions" style="display:none;">
+                            <button onclick="toggleSubtitles()" class="btn-sub"
+                                style="padding:6px 12px; font-size:12px; border-radius:6px; background:#475569; color:white; border:none; cursor:pointer;">Show
+                                Subtitles</button>
+                        </div>
+                    </div>
+
+                    <div id="subtitle-display"
+                        style="display:none; margin-top:12px; background:#f1f5f9; padding:12px; border-radius:8px; max-height:200px; overflow:auto; font-family:monospace; font-size:12px; white-space:pre-wrap; border:1px solid #e2e8f0;">
+                    </div>
                 </div>
 
                 <div class="logs" id="logs" aria-live="polite"></div>
@@ -625,6 +637,13 @@
                             }
                         }
 
+                        // Subtitle Button Visibility
+                        if (data.subtitle_file) {
+                            currentSubtitleUrl = data.subtitle_file;
+                            const subActions = document.getElementById('subtitle-actions');
+                            if (subActions) subActions.style.display = 'block';
+                        }
+
                         // Display Shorts (Generated Files)
                         if (data.generated_files && data.generated_files.length > 0) {
                             data.generated_files.forEach(filename => {
@@ -635,7 +654,7 @@
                                     li.style.marginBottom = "12px";
                                     li.innerHTML = `
                                     <div style="font-weight:bold; margin-bottom:4px;">${filename}</div>
-                                    <video src="/static/shorts/${filename}" controls style="width:100%; max-width:300px; border-radius:8px;"></video>
+                                    <video src="/static/shorts/${filename}" controls preload="metadata" style="width:100%; max-width:300px; border-radius:8px;"></video>
                                 `;
                                     shortsList.appendChild(li);
                                 }
@@ -662,6 +681,33 @@
                     })
                     .catch(e => console.error(e));
             }, 2000);
+        }
+
+        // --- Subtitle Logic ---
+        var currentSubtitleUrl = null;
+        function toggleSubtitles() {
+            const display = document.getElementById('subtitle-display');
+            const btn = document.querySelector('.btn-sub');
+
+            if (display.style.display === 'block') {
+                display.style.display = 'none';
+                btn.textContent = "Show Subtitles";
+            } else {
+                if (currentSubtitleUrl) {
+                    btn.textContent = "Loading...";
+                    fetch(currentSubtitleUrl)
+                        .then(r => r.text())
+                        .then(text => {
+                            display.textContent = text;
+                            display.style.display = 'block';
+                            btn.textContent = "Hide Subtitles";
+                        })
+                        .catch(e => {
+                            alert("Failed to load subtitles");
+                            btn.textContent = "Show Subtitles";
+                        });
+                }
+            }
         }
 
         // Listener for URL input to auto-load video in custom mode
